@@ -119,6 +119,12 @@ public struct LayoutProxy {
         return Edge(context, view, .TrailingMargin)
     }
 
+    /// All padded edges of the view. This property affects `topMargin`,
+    /// `bottomMargin`, `leadingMargin` and `trailingMargin`.
+    public var edgesWithinMargins: Edges {
+        return Edges(context, [ topMargin, leadingMargin, bottomMargin, trailingMargin ])
+    }
+
     /// The horizontal center within the margins of the view. iOS exclusive.
     public var centerXWithinMargins: Edge {
         return Edge(context, view, .CenterXWithinMargins)
