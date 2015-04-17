@@ -163,9 +163,7 @@ extension ConstraintGroup: ExtensibleCollectionType {
     public mutating func extend<Seq: SequenceType where Seq.Generator.Element == NSLayoutConstraint>(newElements: Seq) {
         switch storage {
         case .Modern(var constraints):
-            let asArray = [NSLayoutConstraint](newElements)
-            NSLayoutConstraint.activateConstraints(asArray)
-            constraints.extend(asArray)
+            constraints.extend(newElements)
             storage = .Modern(constraints)
         case .Legacy(var constraints):
             constraints.reserveCapacity(count(self) + underestimateCount(newElements))
