@@ -58,7 +58,11 @@ public struct ConstraintGroup {
             }
 
             if performLayout {
-                layoutIfNeeded(closestCommonAncestors(constraints))
+                layoutIfNeeded(lazy(constraints).map({
+                    closestCommonAncestor($0.firstItem as? View, $0.secondItem as? View)
+                }).filter({
+                    $0 != nil
+                }).map(unsafeUnwrap))
             }
         case .Legacy(let constraints):
             for constraint in constraints {
