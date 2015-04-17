@@ -12,6 +12,20 @@ import UIKit
 import AppKit
 #endif
 
+internal func layoutIfNeeded<Seq: SequenceType where Seq.Generator.Element == View>(views: Seq) {
+    for view in views {
+        #if os(iOS)
+        view.layoutIfNeeded()
+        #else
+        view.layoutSubtreeIfNeeded()
+        #endif
+    }
+}
+
+internal func layoutIfNeeded(views: View...) {
+    layoutIfNeeded(views)
+}
+
 internal func closestCommonAncestor(a: View, b: View) -> View? {
     let (aSuper, bSuper) = (a.superview, b.superview)
 
