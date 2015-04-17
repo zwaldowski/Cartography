@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class ConstraintGroup {
+public struct ConstraintGroup {
     private var constraints: [Constraint] = []
 
     @availability(OSX, introduced=10.10)
@@ -28,11 +28,7 @@ public class ConstraintGroup {
         }
     }
 
-    public init() {
-
-    }
-
-    internal func replaceConstraints(constraints: [Constraint], performLayout: Bool = false) {
+    internal mutating func replaceConstraints(constraints: [Constraint], performLayout: Bool = false) {
         for constraint in self.constraints {
             constraint.uninstall()
 
