@@ -51,13 +51,28 @@ internal func closestCommonAncestor(a: View?, b: View?) -> View? {
     return nil
 }
 
-private func ancestors(v: View) -> SequenceOf<View> {
-    return SequenceOf<View> { () -> GeneratorOf<View> in
-        var view: View? = v
-        return GeneratorOf {
-            let current = view
-            view = view?.superview
-            return current
-        }
+private struct ViewAncestorsGenerator: GeneratorType {
+
+    var view: View?
+
+    mutating func next() -> View? {
+        let current = view
+        view = view?.superview
+        return current
     }
+
+}
+
+private struct ViewAncestorsSequence: SequenceType {
+
+    let view: View
+
+    private func generate() -> ViewAncestorsGenerator {
+        return ViewAncestorsGenerator(view: view)
+    }
+
+}
+
+private func ancestors(v: View) -> ViewAncestorsSequence {
+    return ViewAncestorsSequence(view: v)
 }
