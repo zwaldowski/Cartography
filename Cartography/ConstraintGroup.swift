@@ -32,7 +32,7 @@ public class ConstraintGroup {
 
     }
 
-    internal func replaceConstraints(constraints: [Constraint], performLayout: Bool) {
+    internal func replaceConstraints(constraints: [Constraint], performLayout: Bool = false) {
         for constraint in self.constraints {
             constraint.uninstall()
 

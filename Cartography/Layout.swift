@@ -19,7 +19,8 @@ import Foundation
 public func layout(view: View, replace group: ConstraintGroup = ConstraintGroup(), @noescape function: LayoutProxy -> ()) -> ConstraintGroup {
     let context = Context()
     function(LayoutProxy(context, view))
-    group.replaceConstraints(context.constraints, performLayout: true)
+    group.replaceConstraints(context.constraints)
+    layoutIfNeeded(view)
 
     return group
 }
@@ -36,7 +37,8 @@ public func layout(view: View, replace group: ConstraintGroup = ConstraintGroup(
 public func layout(view1: View, view2: View, replace group: ConstraintGroup = ConstraintGroup(), @noescape function: (LayoutProxy, LayoutProxy) -> ()) -> ConstraintGroup {
     let context = Context()
     function(LayoutProxy(context, view1), LayoutProxy(context, view2))
-    group.replaceConstraints(context.constraints, performLayout: true)
+    group.replaceConstraints(context.constraints)
+    layoutIfNeeded(view1, view2)
 
     return group
 }
@@ -54,7 +56,8 @@ public func layout(view1: View, view2: View, replace group: ConstraintGroup = Co
 public func layout(view1: View, view2: View, view3: View, replace group: ConstraintGroup = ConstraintGroup(), @noescape function: (LayoutProxy, LayoutProxy, LayoutProxy) -> ()) -> ConstraintGroup {
     let context = Context()
     function(LayoutProxy(context, view1), LayoutProxy(context, view2), LayoutProxy(context, view3))
-    group.replaceConstraints(context.constraints, performLayout: true)
+    group.replaceConstraints(context.constraints)
+    layoutIfNeeded(view1, view2, view3)
 
     return group
 }
@@ -67,10 +70,11 @@ public func layout(view1: View, view2: View, view3: View, replace group: Constra
 /// :param: replace The `ConstraintGroup` whose constraints should be replaced.
 /// :param: block   A block that declares the layout for `views`.
 ///
-public func layout(views: [View], replace group: ConstraintGroup = ConstraintGroup(), @noescape function: ([LayoutProxy]) -> ()) -> ConstraintGroup {
+public func layout<C: CollectionType where C.Index: RandomAccessIndexType, C.Generator.Element == View>(views: C, replace group: ConstraintGroup = ConstraintGroup(), @noescape function: LazyRandomAccessCollection<MapCollectionView<C, LayoutProxy>> -> ()) -> ConstraintGroup {
     let context = Context()
-    function(views.map({ LayoutProxy(context, $0) }))
-    group.replaceConstraints(context.constraints, performLayout: true)
+    function(lazy(views).map({ LayoutProxy(context, $0) }))
+    group.replaceConstraints(context.constraints)
+    layoutIfNeeded(views)
 
     return group
 }
@@ -87,7 +91,8 @@ public func layout<T: Hashable>(views: [T: View], replace group: ConstraintGroup
     let context = Context()
     let proxies = map(views) { ($0, LayoutProxy(context, $1)) }
     function(Dictionary(proxies))
-    group.replaceConstraints(context.constraints, performLayout: true)
+    group.replaceConstraints(context.constraints)
+    layoutIfNeeded(views.values)
 
     return group
 }
@@ -111,7 +116,7 @@ public func layout(clear group: ConstraintGroup) {
 public func constrain(view: View, replace group: ConstraintGroup = ConstraintGroup(), @noescape function: LayoutProxy -> ()) -> ConstraintGroup {
     let context = Context()
     function(LayoutProxy(context, view))
-    group.replaceConstraints(context.constraints, performLayout: false)
+    group.replaceConstraints(context.constraints)
 
     return group
 }
@@ -126,7 +131,7 @@ public func constrain(view: View, replace group: ConstraintGroup = ConstraintGro
 public func constrain(v1: View, v2: View, replace group: ConstraintGroup = ConstraintGroup(), @noescape function: (LayoutProxy, LayoutProxy) -> ()) -> ConstraintGroup {
     let context = Context()
     function(LayoutProxy(context, v1), LayoutProxy(context, v2))
-    group.replaceConstraints(context.constraints, performLayout: false)
+    group.replaceConstraints(context.constraints)
 
     return group
 }
@@ -142,7 +147,7 @@ public func constrain(v1: View, v2: View, replace group: ConstraintGroup = Const
 public func constrain(v1: View, v2: View, v3: View, replace group: ConstraintGroup = ConstraintGroup(), @noescape function: (LayoutProxy, LayoutProxy, LayoutProxy) -> ()) -> ConstraintGroup {
     let context = Context()
     function(LayoutProxy(context, v1), LayoutProxy(context, v2), LayoutProxy(context, v3))
-    group.replaceConstraints(context.constraints, performLayout: false)
+    group.replaceConstraints(context.constraints)
 
     return group
 }
@@ -153,10 +158,10 @@ public func constrain(v1: View, v2: View, v3: View, replace group: ConstraintGro
 /// :param: replace The `ConstraintGroup` whose constraints should be replaced.
 /// :param: block   A block that declares the layout for `views`.
 ///
-public func constrain(views: [View], replace group: ConstraintGroup = ConstraintGroup(), @noescape function: ([LayoutProxy]) -> ()) -> ConstraintGroup {
+public func constrain<C: CollectionType where C.Index: RandomAccessIndexType, C.Generator.Element == View>(views: C, replace group: ConstraintGroup = ConstraintGroup(), @noescape function: LazyRandomAccessCollection<MapCollectionView<C, LayoutProxy>> -> ()) -> ConstraintGroup {
     let context = Context()
-    function(views.map({ LayoutProxy(context, $0) }))
-    group.replaceConstraints(context.constraints, performLayout: false)
+    function(lazy(views).map({ LayoutProxy(context, $0) }))
+    group.replaceConstraints(context.constraints)
 
     return group
 }
@@ -171,7 +176,7 @@ public func constrain<T: Hashable>(views: [T: View], replace group: ConstraintGr
     let context = Context()
     let proxies = map(views) { ($0, LayoutProxy(context, $1)) }
     function(Dictionary(proxies))
-    group.replaceConstraints(context.constraints, performLayout: false)
+    group.replaceConstraints(context.constraints)
 
     return group
 }
@@ -181,5 +186,5 @@ public func constrain<T: Hashable>(views: [T: View], replace group: ConstraintGr
 /// :param: clear The `ConstraintGroup` whose constraints should be removed.
 ///
 public func constrain(clear group: ConstraintGroup) {
-    group.replaceConstraints([], performLayout: false)
+    group.replaceConstraints([])
 }
