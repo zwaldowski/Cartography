@@ -26,26 +26,29 @@ internal func layoutIfNeeded(views: View...) {
     layoutIfNeeded(views)
 }
 
-internal func closestCommonAncestor(a: View, b: View) -> View? {
-    let (aSuper, bSuper) = (a.superview, b.superview)
+internal func closestCommonAncestor(a: View?, b: View?) -> View? {
+    switch (a, b) {
+    case (.None, _):
+        return b
+    case (_, .None):
+        return a
+    case (.Some(let a), .Some(let b)) where a === b:
+        return a
+    case (.Some(let a), .Some(let b)):
+        let (aSuper, bSuper) = (a.superview, b.superview)
+        if a === bSuper { return a }
+        if b === aSuper { return b }
+        if aSuper === bSuper { return aSuper }
 
-    if a === b { return a }
-
-    if a === bSuper { return a }
-
-    if b === aSuper { return b }
-
-    if aSuper === bSuper { return aSuper }
-
-    var ancestorsOfA = Set(ancestors(a))
-
-    for ancestor in ancestors(b) {
-        if ancestorsOfA.contains(ancestor) {
-            return ancestor
+        for lAncestor in ancestors(a) {
+            for rAncestor in ancestors(b) {
+                if lAncestor === rAncestor { return rAncestor }
+            }
         }
+    default: break
     }
 
-    return .None
+    return nil
 }
 
 private func ancestors(v: View) -> SequenceOf<View> {
