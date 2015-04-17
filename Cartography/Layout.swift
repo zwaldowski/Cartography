@@ -101,8 +101,8 @@ public func layout<C: CollectionType where C.Index: RandomAccessIndexType, C.Gen
 ///
 public func layout<T: Hashable>(views: [T: View], replace oldConstraints: ConstraintGroup = ConstraintGroup(), @noescape function: ([T : LayoutProxy] -> ())) -> ConstraintGroup {
     let context = Context()
-    let proxies = map(views) { ($0, LayoutProxy(context, $1)) }
-    function(Dictionary(proxies))
+    let proxies = lazy(views).map { ($0, LayoutProxy(context, $1)) }
+    function(Dictionary(pairs: proxies))
 
     oldConstraints.deactivate()
     context.constraints.activate()
@@ -197,8 +197,8 @@ public func constrain<C: CollectionType where C.Index: RandomAccessIndexType, C.
 ///
 public func constrain<T: Hashable>(views: [T: View], replace oldConstraints: ConstraintGroup = ConstraintGroup(), @noescape function: ([T : LayoutProxy] -> ())) -> ConstraintGroup {
     let context = Context()
-    let proxies = map(views) { ($0, LayoutProxy(context, $1)) }
-    function(Dictionary(proxies))
+    let proxies = lazy(views).map { ($0, LayoutProxy(context, $1)) }
+    function(Dictionary(pairs: proxies))
 
     oldConstraints.deactivate()
     context.constraints.activate()

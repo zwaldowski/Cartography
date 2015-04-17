@@ -13,7 +13,7 @@ import AppKit
 #endif
 
 internal extension Dictionary {
-    init(_ pairs: [Element]) {
+    init<Seq: SequenceType where Seq.Generator.Element == Element>(pairs: Seq) {
         self.init()
 
         for (key, value) in pairs {
