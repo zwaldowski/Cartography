@@ -25,24 +25,24 @@ class ConstraintGroupSpec: QuickSpec {
                     view.height == 100
                 }
 
-                a.active = false
+                a.deactivate()
 
                 b = constrain(view1) { view in
                     view.width  == 200
                     view.height == 200
                 }
 
-                b.active = false
+                b.deactivate()
             }
 
             it("should update the view") {
-                a.active = true
+                a.activate(performLayout: true)
 
                 expect(view1.frame.width).to(equal(100))
                 expect(view1.frame.height).to(equal(100))
 
-                a.active = false
-                b.active = true
+                a.deactivate(performLayout: true)
+                b.activate(performLayout: true)
 
                 expect(view1.frame.width).to(equal(200))
                 expect(view1.frame.height).to(equal(200))

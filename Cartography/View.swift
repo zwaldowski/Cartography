@@ -17,6 +17,10 @@ import Foundation
             layoutIfNeeded()
         }
 
+        public var car_constraints: [NSLayoutConstraint] {
+            return constraints() as! [NSLayoutConstraint]
+        }
+
         public var car_translatesAutoresizingMaskIntoConstraints: Bool {
             get { return translatesAutoresizingMaskIntoConstraints() }
             set { setTranslatesAutoresizingMaskIntoConstraints(newValue) }
@@ -29,6 +33,10 @@ import Foundation
     extension View {
         func car_updateLayout() {
             (superview ?? self).layoutSubtreeIfNeeded()
+        }
+
+        public var car_constraints: [NSLayoutConstraint] {
+            return constraints as! [NSLayoutConstraint]
         }
 
         public var car_translatesAutoresizingMaskIntoConstraints: Bool {

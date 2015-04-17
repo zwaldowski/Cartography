@@ -13,7 +13,8 @@ import AppKit
 #endif
 
 public class Context {
-    internal var constraints: [Constraint] = []
+
+    private(set) internal var constraints = ConstraintGroup()
 
     internal func addConstraint(from: Property, to: Property? = nil, coefficients: Coefficients = Coefficients(), relation: NSLayoutRelation = .Equal) -> NSLayoutConstraint {
         from.view.car_translatesAutoresizingMaskIntoConstraints = false
@@ -26,15 +27,7 @@ public class Context {
                                                   multiplier: CGFloat(coefficients.multiplier),
                                                   constant: CGFloat(coefficients.constant))
 
-        if let to = to {
-            if let common = closestCommonAncestor(from.view, to.view ) {
-                constraints.append(Constraint(view: common, layoutConstraint: layoutConstraint))
-            } else {
-                fatalError("No common superview found between \(from.view) and \(to.view)")
-            }
-        } else {
-            constraints.append(Constraint(view: from.view, layoutConstraint: layoutConstraint))
-        }
+        constraints.append(layoutConstraint)
 
         return layoutConstraint
     }

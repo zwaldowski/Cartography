@@ -76,3 +76,11 @@ private struct ViewAncestorsSequence: SequenceType {
 private func ancestors(v: View) -> ViewAncestorsSequence {
     return ViewAncestorsSequence(view: v)
 }
+
+func closestCommonAncestors<Seq: SequenceType where Seq.Generator.Element == NSLayoutConstraint>(sequence: Seq) -> LazySequence<MapSequenceView<FilterSequenceView<MapSequenceView<Seq, View?>>, View>> {
+    return lazy(sequence).map({
+        closestCommonAncestor($0.firstItem as? View, $0.secondItem as? View)
+    }).filter({
+        $0 != nil
+    }).map(unsafeUnwrap)
+}

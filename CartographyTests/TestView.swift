@@ -23,17 +23,10 @@ class TestView: View {
         fatalError("init(coder:) has not been implemented")
     }
 
-#if os(iOS)
-    var car_constraints: [NSLayoutConstraint] {
-        return constraints() as! [NSLayoutConstraint]
-    }
-#else
-    var car_constraints: [NSLayoutConstraint] {
-        return constraints as! [NSLayoutConstraint]
-    }
-
+#if os(OSX)
     override var flipped: Bool {
         return true
     }
 #endif
+
 }

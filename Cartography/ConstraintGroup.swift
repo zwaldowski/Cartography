@@ -9,50 +9,171 @@
 import Foundation
 
 public struct ConstraintGroup {
-    private var constraints: [Constraint] = []
 
-    @availability(OSX, introduced=10.10)
-    @availability(iOS, introduced=8.0)
-    public var active: Bool {
-        get {
-            return constraints.map({ $0.layoutConstraint.active }).reduce(true) { $0 && $1 }
-        }
-        set {
-            for constraint in constraints {
-                constraint.layoutConstraint.active = newValue
-            }
+    private static let supportsModernStorage: Bool = {
+        NSLayoutConstraint.instancesRespondToSelector("isActive")
+    }()
 
-            for constraint in constraints {
-                constraint.view?.car_updateLayout()
-            }
+    private enum Storage {
+        case Modern([NSLayoutConstraint])
+        case Legacy([Constraint])
+    }
+
+    private var storage: Storage
+
+    public init() {
+        if ConstraintGroup.supportsModernStorage {
+            self.storage = .Modern([])
+        } else {
+            self.storage = .Legacy([])
         }
     }
 
-    internal mutating func replaceConstraints(constraints: [Constraint], performLayout: Bool = false) {
-        for constraint in self.constraints {
-            constraint.uninstall()
+    public var isActive: Bool {
+        switch storage {
+        case .Modern(let constraints):
+            return reduce(lazy(constraints).map({
+                $0.active
+            }), true) {
+                $0 && $1
+            }
+        case .Legacy(let constraints):
+            for constraint in constraints {
+                let theseConstraints = constraint.view?.car_constraints ?? []
+                if !contains(theseConstraints, {
+                    $0 === constraint.layoutConstraint
+                }) { return false }
+            }
+            return true
+        }
+    }
+
+    private func setActive(newValue: Bool, performLayout: Bool = false) {
+        switch storage {
+        case .Modern(let constraints):
+            if newValue {
+                NSLayoutConstraint.activateConstraints(constraints)
+            } else {
+                NSLayoutConstraint.deactivateConstraints(constraints)
+            }
 
             if performLayout {
+                layoutIfNeeded(closestCommonAncestors(constraints))
+            }
+        case .Legacy(let constraints):
+            for constraint in constraints {
+                constraint.uninstall()
                 constraint.view?.car_updateLayout()
             }
         }
 
-        if performLayout {
-            for view in self.constraints.map({ $0.view }) {
-                view?.car_updateLayout()
-            }
-        }
+    }
 
-        self.constraints = constraints
+    public func activate(performLayout: Bool = false) {
+        setActive(true, performLayout: performLayout)
+    }
 
-        for constraint in self.constraints {
-            constraint.install()
-        }
+    public func deactivate(performLayout: Bool = false) {
+        setActive(false, performLayout: performLayout)
+    }
 
-        if performLayout {
-            for view in self.constraints.map({ $0.view }) {
-                view?.car_updateLayout()
-            }
+}
+
+// MARK: SequenceType
+
+extension ConstraintGroup: SequenceType {
+
+    public func generate() -> GeneratorOf<NSLayoutConstraint> {
+        switch storage {
+        case .Legacy(let constraints):
+            return GeneratorOf(lazy(constraints).map({ $0.layoutConstraint }).generate())
+        case .Modern(let constraints):
+            return GeneratorOf(constraints.generate())
         }
     }
+
+}
+
+// MARK: CollectionType
+
+extension ConstraintGroup: CollectionType {
+
+    public var startIndex: Int {
+        switch storage {
+        case .Legacy(let constraints):
+            return constraints.startIndex
+        case .Modern(let constraints):
+            return constraints.startIndex
+        }
+    }
+
+    public var endIndex: Int {
+        switch storage {
+        case .Legacy(let constraints):
+            return constraints.endIndex
+        case .Modern(let constraints):
+            return constraints.endIndex
+        }
+    }
+
+    public subscript (position: Int) -> NSLayoutConstraint {
+        switch storage {
+        case .Legacy(let constraints):
+            return constraints[position].layoutConstraint
+        case .Modern(let constraints):
+            return constraints[position]
+        }
+    }
+
+}
+
+// MARK: ExtensibleCollectionType
+
+extension ConstraintGroup: ExtensibleCollectionType {
+
+    public mutating func append(c: NSLayoutConstraint) {
+        switch (storage, c.secondItem) {
+        case (.Modern(var constraints), _):
+            constraints.append(c)
+            storage = .Modern(constraints)
+        case (.Legacy(var constraints), .Some(let to as View)):
+            if let common = closestCommonAncestor(c.firstItem as? View, to) {
+                constraints.append(Constraint(view: common, layoutConstraint: c))
+                storage = .Legacy(constraints)
+            } else {
+                fatalError("No common superview found between \(c.firstItem) and \(to)")
+            }
+        case (.Legacy(var constraints), _):
+            constraints.append(Constraint(view: c.firstItem as! View, layoutConstraint: c))
+            storage = .Legacy(constraints)
+        }
+    }
+
+    public mutating func reserveCapacity(n: Int) {
+        switch storage {
+        case .Modern(var constraints):
+            constraints.reserveCapacity(n)
+            storage = .Modern(constraints)
+        case .Legacy(var constraints):
+            constraints.reserveCapacity(n)
+            storage = .Legacy(constraints)
+        }
+    }
+
+    public mutating func extend<Seq: SequenceType where Seq.Generator.Element == NSLayoutConstraint>(newElements: Seq) {
+        switch storage {
+        case .Modern(var constraints):
+            let asArray = [NSLayoutConstraint](newElements)
+            NSLayoutConstraint.activateConstraints(asArray)
+            constraints.extend(asArray)
+            storage = .Modern(constraints)
+        case .Legacy(var constraints):
+            constraints.reserveCapacity(count(self) + underestimateCount(newElements))
+            for x in newElements {
+                self.append(x)
+            }
+            storage = .Legacy(constraints)
+        }
+    }
+
 }
