@@ -13,10 +13,6 @@ import Foundation
     public typealias View = UIView
 
     extension View {
-        func car_updateLayout() {
-            layoutIfNeeded()
-        }
-
         public var car_constraints: [NSLayoutConstraint] {
             return constraints() as! [NSLayoutConstraint]
         }
@@ -31,10 +27,6 @@ import Foundation
     public typealias View = NSView
 
     extension View {
-        func car_updateLayout() {
-            (superview ?? self).layoutSubtreeIfNeeded()
-        }
-
         public var car_constraints: [NSLayoutConstraint] {
             return constraints as! [NSLayoutConstraint]
         }

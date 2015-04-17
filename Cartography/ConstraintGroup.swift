@@ -63,7 +63,9 @@ public struct ConstraintGroup {
         case .Legacy(let constraints):
             for constraint in constraints {
                 constraint.uninstall()
-                constraint.view?.car_updateLayout()
+                if performLayout, let view = constraint.view {
+                    layoutIfNeeded(view)
+                }
             }
         }
 
